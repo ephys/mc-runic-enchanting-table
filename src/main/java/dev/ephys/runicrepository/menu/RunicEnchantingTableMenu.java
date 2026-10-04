@@ -40,7 +40,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     checkContainerSize(tableContainer, 2);
     tableContainer.startOpen(playerInventory.player);
 
-    this.addSlot(new Slot(tableContainer, RunicEnchantingTableBlockEntity.SLOT_ITEM, 13, 25) {
+    this.addSlot(new Slot(tableContainer, RunicEnchantingTableBlockEntity.SLOT_ITEM, 15, 47) {
       @Override
       public boolean mayPlace(ItemStack stack) {
         return tableContainer.canPlaceItem(RunicEnchantingTableBlockEntity.SLOT_ITEM, stack);
@@ -52,7 +52,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
       }
     });
 
-    this.addSlot(new Slot(tableContainer, RunicEnchantingTableBlockEntity.SLOT_LAPIS, 13, 53) {
+    this.addSlot(new Slot(tableContainer, RunicEnchantingTableBlockEntity.SLOT_LAPIS, 35, 47) {
       @Override
       public boolean mayPlace(ItemStack stack) {
         return tableContainer.canPlaceItem(RunicEnchantingTableBlockEntity.SLOT_LAPIS, stack);
@@ -62,13 +62,13 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     // inventory
     for (int row = 0; row < 3; row++) {
       for (int col = 0; col < 9; col++) {
-        this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
+        this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 95 + row * 18));
       }
     }
 
     // hotbar
     for (int col = 0; col < 9; col++) {
-      this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 198));
+      this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 153));
     }
   }
 
@@ -76,7 +76,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     return tableContainer instanceof RunicEnchantingTableBlockEntity be ? be.getLibrary() : Map.of();
   }
 
-  private ItemStack getItemToEnchant() {
+  public ItemStack getItemToEnchant() {
     return tableContainer.getItem(RunicEnchantingTableBlockEntity.SLOT_ITEM);
   }
 

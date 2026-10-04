@@ -48,7 +48,7 @@ public class ServerboundApplyEnchantmentPacket {
       }
 
       if (player.containerMenu instanceof RunicEnchantingTableMenu menu) {
-        menu.applyEnchantments(player, packet.selection);
+        menu.enchant(player, packet.selection);
       }
     });
     context.setPacketHandled(true);
