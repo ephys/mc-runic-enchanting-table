@@ -69,7 +69,7 @@ public class RunicEnchantingTableBlock extends BaseEntityBlock {
   @Nullable
   @Override
   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-    return level.isClientSide ? null : createTickerHelper(type, ModBlockEntities.RUNIC_ENCHANTING_TABLE.get(), RunicEnchantingTableBlockEntity::tick);
+    return createTickerHelper(type, ModBlockEntities.RUNIC_ENCHANTING_TABLE.get(), RunicEnchantingTableBlockEntity::tick);
   }
 
   @Override

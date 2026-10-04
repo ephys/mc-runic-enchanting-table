@@ -9,6 +9,7 @@ import dev.ephys.runicrepository.util.EnchantmentLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,12 +45,23 @@ public class RunicEnchantingTableBlockEntity extends BaseContainerBlockEntity {
   private Map<ResourceLocation, Integer> library = new HashMap<>();
   private int ticksSinceRescan = 0;
 
+  // client-side book animation state (mirrors vanilla's enchanting table)
+  public int time;
+  public float flip, oFlip, flipT, flipA;
+  public float open, oOpen;
+  public float rot, oRot, tRot;
+
   public RunicEnchantingTableBlockEntity(BlockPos pos, BlockState state) {
     super(ModBlockEntities.RUNIC_ENCHANTING_TABLE.get(), pos, state);
   }
 
   public static void tick(Level level, BlockPos pos, BlockState state, RunicEnchantingTableBlockEntity be) {
-    if (level.isClientSide || be.viewers.isEmpty()) {
+    if (level.isClientSide) {
+      be.bookAnimationTick(level, pos);
+      return;
+    }
+
+    if (be.viewers.isEmpty()) {
       return;
     }
 
@@ -58,6 +70,58 @@ public class RunicEnchantingTableBlockEntity extends BaseContainerBlockEntity {
       be.ticksSinceRescan = 0;
       be.rescanAndBroadcast();
     }
+  }
+
+  private void bookAnimationTick(Level level, BlockPos pos) {
+    oOpen = open;
+    oRot = rot;
+
+    Player player = level.getNearestPlayer(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 3.0D, false);
+    if (player != null) {
+      double dx = player.getX() - (pos.getX() + 0.5D);
+      double dz = player.getZ() - (pos.getZ() + 0.5D);
+      tRot = (float) Mth.atan2(dz, dx);
+      open += 0.1F;
+      if (open < 0.5F || level.random.nextInt(40) == 0) {
+        float old = flipT;
+        do {
+          flipT += level.random.nextInt(4) - level.random.nextInt(4);
+        } while (old == flipT);
+      }
+    } else {
+      tRot += 0.02F;
+      open -= 0.1F;
+    }
+
+    while (rot >= (float) Math.PI) {
+      rot -= (float) (Math.PI * 2);
+    }
+    while (rot < -(float) Math.PI) {
+      rot += (float) (Math.PI * 2);
+    }
+    while (tRot >= (float) Math.PI) {
+      tRot -= (float) (Math.PI * 2);
+    }
+    while (tRot < -(float) Math.PI) {
+      tRot += (float) (Math.PI * 2);
+    }
+
+    float diff = tRot - rot;
+    while (diff >= (float) Math.PI) {
+      diff -= (float) (Math.PI * 2);
+    }
+    while (diff < -(float) Math.PI) {
+      diff += (float) (Math.PI * 2);
+    }
+
+    rot += diff * 0.4F;
+    open = Mth.clamp(open, 0.0F, 1.0F);
+    time++;
+    oFlip = flip;
+    float d = (flipT - flip) * 0.4F;
+    d = Mth.clamp(d, -0.2F, 0.2F);
+    flipA += (d - flipA) * 0.9F;
+    flip += flipA;
   }
 
   private void rescanAndBroadcast() {
