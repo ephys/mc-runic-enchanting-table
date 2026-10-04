@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class EnchantmentListWidget extends AbstractWidget {
   private static final int ROW_WIDTH = 102;
@@ -53,7 +53,7 @@ public class EnchantmentListWidget extends AbstractWidget {
   private List<RunicEnchantingTableMenu.ApplicableEnchantment> entries = List.of();
   private Map<ResourceLocation, Integer> selection = Map.of();
   private BiConsumer<ResourceLocation, Integer> onLevelChanged;
-  private Function<ResourceLocation, Integer> costDeltaForNextLevel;
+  private BiFunction<ResourceLocation, Integer, Integer> costDeltaForLevel;
 
   private double scrollAmount;
 
@@ -67,11 +67,11 @@ public class EnchantmentListWidget extends AbstractWidget {
   public void updateEntries(List<RunicEnchantingTableMenu.ApplicableEnchantment> entries,
                             Map<ResourceLocation, Integer> selection,
                             BiConsumer<ResourceLocation, Integer> onLevelChanged,
-                            Function<ResourceLocation, Integer> costDeltaForNextLevel) {
+                            BiFunction<ResourceLocation, Integer, Integer> costDeltaForLevel) {
     this.entries = entries;
     this.selection = selection;
     this.onLevelChanged = onLevelChanged;
-    this.costDeltaForNextLevel = costDeltaForNextLevel;
+    this.costDeltaForLevel = costDeltaForLevel;
 
     double max = getMaxScroll();
     if (this.scrollAmount > max) {
@@ -127,12 +127,12 @@ public class EnchantmentListWidget extends AbstractWidget {
   private void renderRow(GuiGraphics graphics, RunicEnchantingTableMenu.ApplicableEnchantment applicable, int rowTop, int left, int mouseX, int mouseY) {
     Font font = Minecraft.getInstance().font;
     boolean selectable = applicable.isSelectable();
-    int level = selection.getOrDefault(applicable.id(), 0);
+    int level = selection.getOrDefault(applicable.id(), applicable.currentLevel());
 
-    Sprite row = !selectable ? ROW_DISABLED : level > 0 ? ROW_SELECTED : ROW_ENABLED;
+    Sprite row = !selectable ? ROW_DISABLED : selection.containsKey(applicable.id()) ? ROW_SELECTED : ROW_ENABLED;
     row.blit(graphics, left, rowTop);
 
-    int titleColor = !selectable ? 0x707070 : level > 0 ? 0xFFFFA0 : 0xFFFFFF;
+    int titleColor = !selectable ? 0x707070 : selection.containsKey(applicable.id()) ? 0xFFFFA0 : 0xFFFFFF;
     Component name = getEnchantmentName(applicable.enchantment(), level);
     String fullName = name.getString();
     String trimmed = trimToWidth(font, fullName, NAME_MAX_WIDTH);
@@ -150,7 +150,7 @@ public class EnchantmentListWidget extends AbstractWidget {
       return;
     }
 
-    boolean leftEnabled = level > 0;
+    boolean leftEnabled = level > applicable.currentLevel();
     boolean rightEnabled = level < applicable.maxLevel();
 
     int leftArrowX = left + LEFT_ARROW_LOCAL_X;
@@ -165,8 +165,8 @@ public class EnchantmentListWidget extends AbstractWidget {
     leftArrow.blit(graphics, leftArrowX, arrowY);
     rightArrow.blit(graphics, rightArrowX, arrowY);
 
-    if (rightEnabled && hoveringRight && costDeltaForNextLevel != null) {
-      int delta = costDeltaForNextLevel.apply(applicable.id());
+    if (rightEnabled && hoveringRight && costDeltaForLevel != null) {
+      int delta = costDeltaForLevel.apply(applicable.id(), level + 1);
       hoveredTooltip = Component.translatable("gui.runicrepository.cost_delta", delta > 0 ? "+" + delta : delta).withStyle(delta > 0 ? ChatFormatting.WHITE : ChatFormatting.GREEN);
     } else if (nameTrimmed && rowHovered) {
       hoveredTooltip = name;
@@ -241,12 +241,14 @@ public class EnchantmentListWidget extends AbstractWidget {
     int rightArrowX = left + RIGHT_ARROW_LOCAL_X;
     int arrowY = rowTop + ARROW_LOCAL_Y;
 
-    int level = selection.getOrDefault(applicable.id(), 0);
+    int level = selection.getOrDefault(applicable.id(), applicable.currentLevel());
 
     if (mouseOver((int) mouseX, (int) mouseY, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT)) {
-      if (level > 0 && onLevelChanged != null) {
+      if (level > applicable.currentLevel() && onLevelChanged != null) {
         playClickSound();
-        onLevelChanged.accept(applicable.id(), level - 1);
+        int newLevel = level - 1;
+        // 0 clears the selection once we're back at the level already on the item.
+        onLevelChanged.accept(applicable.id(), newLevel > applicable.currentLevel() ? newLevel : 0);
       }
       return true;
     }

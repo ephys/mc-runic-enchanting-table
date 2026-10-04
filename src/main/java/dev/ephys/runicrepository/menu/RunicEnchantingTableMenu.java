@@ -112,8 +112,9 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
         continue;
       }
 
-      // TODO: you should be able to upgrade an enchantment you already have.
-      if (existingEnchantments.containsKey(enchantment)) {
+      // Already-applied enchantments are only offered if the library holds a higher level.
+      int currentLevel = existingEnchantments.getOrDefault(enchantment, 0);
+      if (entry.getValue() <= currentLevel) {
         continue;
       }
 
@@ -122,7 +123,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
       }
 
       Enchantment incompatibleWith = findIncompatible(enchantment, existingEnchantments.keySet(), selectedEnchantments);
-      result.add(new ApplicableEnchantment(enchantment, entry.getKey(), entry.getValue(), incompatibleWith));
+      result.add(new ApplicableEnchantment(enchantment, entry.getKey(), entry.getValue(), currentLevel, incompatibleWith));
     }
 
     result.sort((a, b) -> a.id().compareTo(b.id()));
@@ -154,7 +155,11 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     Map<Enchantment, Integer> existing = EnchantmentHelper.getEnchantments(getItemToEnchant());
     Map<Enchantment, Integer> selected = toEnchantmentMap(selection);
 
-    int lapis = selection.values().stream().mapToInt(level -> level * Config.lapisCostPerLevel).sum();
+    int lapis = 0;
+    for (Map.Entry<Enchantment, Integer> entry : selected.entrySet()) {
+      int upgradedLevels = Math.max(0, entry.getValue() - existing.getOrDefault(entry.getKey(), 0));
+      lapis += upgradedLevels * Config.lapisCostPerLevel;
+    }
     int xp = AnvilCost.getEnchantCost(existing, selected);
 
     return new Cost(lapis, xp);
@@ -191,7 +196,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
       ApplicableEnchantment a = applicable.get(entry.getKey());
       int level = entry.getValue();
 
-      if (a == null || !a.isSelectable() || level < 1 || level > a.maxLevel()) {
+      if (a == null || !a.isSelectable() || level <= a.currentLevel() || level > a.maxLevel()) {
         return false;
       }
 
@@ -277,10 +282,11 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
   }
 
   /**
-   * One enchantment the player could choose to apply.
+   * One enchantment the player could choose to apply or upgrade. {@code currentLevel} is the level
+   * already on the item (0 if absent).
    */
   public record ApplicableEnchantment(Enchantment enchantment, ResourceLocation id, int maxLevel,
-                                      @Nullable Enchantment incompatibleWith) {
+                                      int currentLevel, @Nullable Enchantment incompatibleWith) {
     public boolean isSelectable() {
       return incompatibleWith == null;
     }

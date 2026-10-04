@@ -137,9 +137,10 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     var applicable = this.menu.getApplicableEnchantments(selection.keySet());
     var validIds = applicable.stream().map(RunicEnchantingTableMenu.ApplicableEnchantment::id).collect(java.util.stream.Collectors.toSet());
     selection.keySet().removeIf(id -> !validIds.contains(id));
+    applicable.forEach(a -> selection.computeIfPresent(a.id(), (id, level) -> level > a.currentLevel() ? level : null));
 
     this.hasApplicableEnchantments = !applicable.isEmpty();
-    list.updateEntries(applicable, selection, this::onLevelChanged, this::costDeltaForNextLevel);
+    list.updateEntries(applicable, selection, this::onLevelChanged, this::costDeltaForLevel);
 
     if (applyButton != null) {
       applyButton.active = !selection.isEmpty() && canAfford(this.menu.computeCost(selection));
@@ -154,10 +155,10 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     }
   }
 
-  private int costDeltaForNextLevel(ResourceLocation id) {
+  private int costDeltaForLevel(ResourceLocation id, int level) {
     int before = this.menu.computeCost(selection).xpLevels();
     Map<ResourceLocation, Integer> bumped = new HashMap<>(selection);
-    bumped.merge(id, 1, Integer::sum);
+    bumped.put(id, level);
     int after = this.menu.computeCost(bumped).xpLevels();
     return after - before;
   }
