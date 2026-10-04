@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnchantingTableMenu> {
-  private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("runicrepository", "textures/gui/container/runic_enchanting_table.png");
   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/enchanting_table_book.png");
 
   private static final int IMAGE_WIDTH = 176;
@@ -37,7 +36,20 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
 
   private static final int PRICE_RIGHT_X = 130;
   private static final int PRICE_Y = 74;
-  private static final int PRICE_LINE_HEIGHT = 9;
+  private static final int PRICE_ROW_HEIGHT = 12;
+  private static final int PRICE_SPACING = 6;
+  private static final int ICON_TEXT_GAP = 2;
+
+  private static final Sprite BACKGROUND = new Sprite(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+
+  private static final Sprite XP_OK_ICON = new Sprite(177, 2, 9, 9);
+  private static final Sprite XP_KO_ICON = new Sprite(178, 19, 7, 7);
+  private static final Sprite LAPIS_KO_ICON = new Sprite(194, 64, 12, 12);
+  private static final Sprite LAPIS_OK_ICON = new Sprite(194, 77, 12, 12);
+
+  private static final int LAPIS_TEXT_COLOR = 0xA0A0FF;
+  private static final int XP_TEXT_COLOR = 0x80FF80;
+  private static final int INSUFFICIENT_TEXT_COLOR = 0xFF6060;
 
   /**
    * Enchantments currently chosen for the pending "Enchant" action, mapped to their chosen level.
@@ -163,14 +175,39 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     int x = this.leftPos;
     int y = this.topPos;
 
-    graphics.blit(TEXTURE, x, y, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+    BACKGROUND.blit(graphics, x, y);
     this.renderBook(graphics, x, y, partialTick);
 
     var cost = this.menu.computeCost(selection);
-    int lapisWidth = this.font.width(String.valueOf(cost.lapis()));
-    int xpWidth = this.font.width(String.valueOf(cost.xpLevels()));
-    graphics.drawString(this.font, String.valueOf(cost.lapis()), x + PRICE_RIGHT_X - lapisWidth, y + PRICE_Y, 0xA0A0FF, false);
-    graphics.drawString(this.font, String.valueOf(cost.xpLevels()), x + PRICE_RIGHT_X - xpWidth, y + PRICE_Y + PRICE_LINE_HEIGHT, 0x80FF80, false);
+    boolean creative = this.minecraft.player.getAbilities().instabuild;
+    boolean lapisOk = creative || this.menu.getLapisCount() >= cost.lapis();
+    boolean xpOk = creative || this.minecraft.player.experienceLevel >= cost.xpLevels();
+
+    Sprite lapisIcon = lapisOk ? LAPIS_OK_ICON : LAPIS_KO_ICON;
+    Sprite xpIcon = xpOk ? XP_OK_ICON : XP_KO_ICON;
+
+    String lapisText = String.valueOf(cost.lapis());
+    String xpText = String.valueOf(cost.xpLevels());
+    int lapisWidth = lapisIcon.width() + ICON_TEXT_GAP + this.font.width(lapisText);
+    int xpWidth = xpIcon.width() + ICON_TEXT_GAP + this.font.width(xpText);
+
+    // Lapis then XP, side by side, right-aligned on PRICE_RIGHT_X.
+    int xpX = x + PRICE_RIGHT_X - xpWidth;
+    int lapisX = xpX - PRICE_SPACING - lapisWidth;
+    int rowY = y + PRICE_Y;
+
+    drawPrice(graphics, lapisIcon, lapisText, lapisX, rowY, lapisOk ? LAPIS_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
+    drawPrice(graphics, xpIcon, xpText, xpX, rowY, xpOk ? XP_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
+  }
+
+  /**
+   * Draws an icon followed by its amount, both vertically centered on the price row.
+   */
+  private void drawPrice(GuiGraphics graphics, Sprite icon, String text, int x, int rowY, int color) {
+    int iconY = rowY + (PRICE_ROW_HEIGHT - icon.height()) / 2;
+    icon.blit(graphics, x, iconY);
+    int textY = rowY + (PRICE_ROW_HEIGHT - this.font.lineHeight) / 2;
+    graphics.drawString(this.font, text, x + icon.width() + ICON_TEXT_GAP, textY, color, false);
   }
 
   /**

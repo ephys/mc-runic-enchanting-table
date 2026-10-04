@@ -20,14 +20,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class EnchantmentListWidget extends AbstractWidget {
-  private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("runicrepository", "textures/gui/container/runic_enchanting_table.png");
-
   private static final int ROW_WIDTH = 102;
   private static final int ROW_HEIGHT = 19;
-  private static final int ROW_U = 0;
-  private static final int ROW_ENABLED_V = 199;
-  private static final int ROW_DISABLED_V = 218;
-  private static final int ROW_SELECTED_V = 237;
+  private static final Sprite ROW_ENABLED = new Sprite(0, 199, ROW_WIDTH, ROW_HEIGHT);
+  private static final Sprite ROW_DISABLED = new Sprite(0, 218, ROW_WIDTH, ROW_HEIGHT);
+  private static final Sprite ROW_SELECTED = new Sprite(0, 237, ROW_WIDTH, ROW_HEIGHT);
 
   private static final int VIEWPORT_WIDTH = 103;
   private static final int VIEWPORT_HEIGHT = 57;
@@ -35,18 +32,17 @@ public class EnchantmentListWidget extends AbstractWidget {
   private static final int TRACK_LOCAL_X = 103;
   private static final int TRACK_WIDTH = 6;
   private static final int HANDLE_HEIGHT = 27;
-  private static final int HANDLE_NORMAL_U = 223;
-  private static final int HANDLE_HOVER_U = 229;
-  private static final int HANDLE_V = 1;
+  private static final Sprite HANDLE_NORMAL = new Sprite(223, 1, TRACK_WIDTH, HANDLE_HEIGHT);
+  private static final Sprite HANDLE_HOVER = new Sprite(229, 1, TRACK_WIDTH, HANDLE_HEIGHT);
 
   private static final int ARROW_WIDTH = 10;
   private static final int ARROW_HEIGHT = 15;
-  private static final int RIGHT_ARROW_U = 177;
-  private static final int RIGHT_ARROW_V = 29;
-  private static final int LEFT_ARROW_U = 177;
-  private static final int LEFT_ARROW_V = 48;
-  private static final int ARROW_HOVER_U_OFFSET = 12;
-  private static final int ARROW_DISABLED_U_OFFSET = 24;
+  private static final Sprite RIGHT_ARROW = new Sprite(177, 29, ARROW_WIDTH, ARROW_HEIGHT);
+  private static final Sprite RIGHT_ARROW_HOVER = new Sprite(189, 29, ARROW_WIDTH, ARROW_HEIGHT);
+  private static final Sprite RIGHT_ARROW_DISABLED = new Sprite(201, 29, ARROW_WIDTH, ARROW_HEIGHT);
+  private static final Sprite LEFT_ARROW = new Sprite(177, 48, ARROW_WIDTH, ARROW_HEIGHT);
+  private static final Sprite LEFT_ARROW_HOVER = new Sprite(189, 48, ARROW_WIDTH, ARROW_HEIGHT);
+  private static final Sprite LEFT_ARROW_DISABLED = new Sprite(201, 48, ARROW_WIDTH, ARROW_HEIGHT);
 
   private static final int LEFT_ARROW_LOCAL_X = 79;
   private static final int LEVEL_LOCAL_CENTER_X = 81;
@@ -117,8 +113,8 @@ public class EnchantmentListWidget extends AbstractWidget {
       int trackX = left + TRACK_LOCAL_X;
       int handleY = top + (int) Math.round((VIEWPORT_HEIGHT - HANDLE_HEIGHT) * (scrollAmount / maxScroll));
       boolean hoveringHandle = mouseX >= trackX && mouseX < trackX + TRACK_WIDTH && mouseY >= handleY && mouseY < handleY + HANDLE_HEIGHT;
-      int u = (hoveringHandle || draggingScrollbar) ? HANDLE_HOVER_U : HANDLE_NORMAL_U;
-      graphics.blit(TEXTURE, trackX, handleY, u, HANDLE_V, TRACK_WIDTH, HANDLE_HEIGHT);
+      Sprite handle = (hoveringHandle || draggingScrollbar) ? HANDLE_HOVER : HANDLE_NORMAL;
+      handle.blit(graphics, trackX, handleY);
     }
   }
 
@@ -137,8 +133,8 @@ public class EnchantmentListWidget extends AbstractWidget {
     boolean selectable = applicable.isSelectable();
     int level = selection.getOrDefault(applicable.id(), 0);
 
-    int rowV = !selectable ? ROW_DISABLED_V : level > 0 ? ROW_SELECTED_V : ROW_ENABLED_V;
-    graphics.blit(TEXTURE, left, rowTop, ROW_U, rowV, ROW_WIDTH, ROW_HEIGHT);
+    Sprite row = !selectable ? ROW_DISABLED : level > 0 ? ROW_SELECTED : ROW_ENABLED;
+    row.blit(graphics, left, rowTop);
 
     int titleColor = !selectable ? 0x707070 : level > 0 ? 0xFFFFA0 : 0xFFFFFF;
     Component name = getEnchantmentName(applicable.enchantment(), level);
@@ -168,8 +164,10 @@ public class EnchantmentListWidget extends AbstractWidget {
     boolean hoveringLeft = inViewport && mouseOver(mouseX, mouseY, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
     boolean hoveringRight = inViewport && mouseOver(mouseX, mouseY, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
 
-    drawArrow(graphics, LEFT_ARROW_U, LEFT_ARROW_V, leftArrowX, arrowY, leftEnabled, hoveringLeft && leftEnabled);
-    drawArrow(graphics, RIGHT_ARROW_U, RIGHT_ARROW_V, rightArrowX, arrowY, rightEnabled, hoveringRight && rightEnabled);
+    Sprite leftArrow = !leftEnabled ? LEFT_ARROW_DISABLED : hoveringLeft ? LEFT_ARROW_HOVER : LEFT_ARROW;
+    Sprite rightArrow = !rightEnabled ? RIGHT_ARROW_DISABLED : hoveringRight ? RIGHT_ARROW_HOVER : RIGHT_ARROW;
+    leftArrow.blit(graphics, leftArrowX, arrowY);
+    rightArrow.blit(graphics, rightArrowX, arrowY);
 
     if (rightEnabled && hoveringRight && costDeltaForNextLevel != null) {
       int delta = costDeltaForNextLevel.apply(applicable.id());
@@ -177,11 +175,6 @@ public class EnchantmentListWidget extends AbstractWidget {
     } else if (nameTrimmed && rowHovered) {
       hoveredTooltip = name;
     }
-  }
-
-  private void drawArrow(GuiGraphics graphics, int baseU, int v, int x, int y, boolean enabled, boolean hovered) {
-    int u = baseU + (!enabled ? ARROW_DISABLED_U_OFFSET : hovered ? ARROW_HOVER_U_OFFSET : 0);
-    graphics.blit(TEXTURE, x, y, u, v, ARROW_WIDTH, ARROW_HEIGHT);
   }
 
   private boolean mouseOver(int mouseX, int mouseY, int x, int y, int width, int height) {

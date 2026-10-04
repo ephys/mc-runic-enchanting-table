@@ -4,20 +4,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public class ApplyEnchantmentButton extends AbstractWidget {
-  private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("runicrepository", "textures/gui/container/runic_enchanting_table.png");
-
   private static final int WIDTH = 20;
   private static final int HEIGHT = 18;
 
-  private static final int BG_ENABLED_U = 212, BG_ENABLED_V = 29;
-  private static final int BG_DISABLED_U = 212, BG_DISABLED_V = 48;
-  private static final int BG_HOVERED_U = 233, BG_HOVERED_V = 48;
+  private static final Sprite BG_ENABLED = new Sprite(212, 29, WIDTH, HEIGHT);
+  private static final Sprite BG_DISABLED = new Sprite(212, 48, WIDTH, HEIGHT);
+  private static final Sprite BG_HOVERED = new Sprite(233, 48, WIDTH, HEIGHT);
 
-  private static final int ICON_U = 177, ICON_V = 64;
-  private static final int ICON_WIDTH = 16, ICON_HEIGHT = 14;
+  private static final Sprite ICON = new Sprite(177, 64, 16, 14);
 
   private final Runnable onPress;
 
@@ -39,20 +35,10 @@ public class ApplyEnchantmentButton extends AbstractWidget {
 
   @Override
   protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-    int u, v;
-    if (!this.active) {
-      u = BG_DISABLED_U;
-      v = BG_DISABLED_V;
-    } else if (this.isHovered) {
-      u = BG_HOVERED_U;
-      v = BG_HOVERED_V;
-    } else {
-      u = BG_ENABLED_U;
-      v = BG_ENABLED_V;
-    }
+    Sprite background = !this.active ? BG_DISABLED : this.isHovered ? BG_HOVERED : BG_ENABLED;
 
-    graphics.blit(TEXTURE, this.getX(), this.getY(), u, v, WIDTH, HEIGHT);
-    graphics.blit(TEXTURE, this.getX() + (WIDTH - ICON_WIDTH) / 2, this.getY() + (HEIGHT - ICON_HEIGHT) / 2, ICON_U, ICON_V, ICON_WIDTH, ICON_HEIGHT);
+    background.blit(graphics, this.getX(), this.getY());
+    ICON.blit(graphics, this.getX() + (WIDTH - ICON.width()) / 2, this.getY() + (HEIGHT - ICON.height()) / 2);
   }
 
   @Override

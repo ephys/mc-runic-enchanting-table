@@ -80,7 +80,7 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     return tableContainer.getItem(RunicEnchantingTableBlockEntity.SLOT_ITEM);
   }
 
-  private int getLapisCount() {
+  public int getLapisCount() {
     return tableContainer.getItem(RunicEnchantingTableBlockEntity.SLOT_LAPIS).getCount();
   }
 
