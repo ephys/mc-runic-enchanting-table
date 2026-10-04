@@ -34,11 +34,12 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
   private static final int APPLY_BUTTON_X = 149;
   private static final int APPLY_BUTTON_Y = 74;
 
-  private static final int PRICE_RIGHT_X = 130;
-  private static final int PRICE_Y = 74;
-  private static final int PRICE_ROW_HEIGHT = 12;
+  private static final int PRICE_RIGHT_X = 142;
+  private static final int PRICE_Y = 77;
+  private static final int PRICE_ROW_HEIGHT = 12; // height of tallest icon (lapis)
   private static final int PRICE_SPACING = 6;
   private static final int ICON_TEXT_GAP = 2;
+  private static final int PRICE_MIN_TEXT_WIDTH = 6;
 
   private static final Sprite BACKGROUND = new Sprite(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 
@@ -47,8 +48,7 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
   private static final Sprite LAPIS_KO_ICON = new Sprite(194, 64, 12, 12);
   private static final Sprite LAPIS_OK_ICON = new Sprite(194, 77, 12, 12);
 
-  private static final int LAPIS_TEXT_COLOR = 0xA0A0FF;
-  private static final int XP_TEXT_COLOR = 0x80FF80;
+  private static final int GREY_TEXT_COLOR = 0x404040;
   private static final int INSUFFICIENT_TEXT_COLOR = 0xFF6060;
 
   /**
@@ -190,6 +190,10 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     BACKGROUND.blit(graphics, x, y);
     this.renderBook(graphics, x, y, partialTick);
 
+    if (selection.size() == 0) {
+      return;
+    }
+
     var cost = this.menu.computeCost(selection);
     boolean lapisOk = hasEnoughLapis(cost);
     boolean xpOk = hasEnoughXp(cost);
@@ -199,26 +203,30 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
 
     String lapisText = String.valueOf(cost.lapis());
     String xpText = String.valueOf(cost.xpLevels());
-    int lapisWidth = lapisIcon.width() + ICON_TEXT_GAP + this.font.width(lapisText);
-    int xpWidth = xpIcon.width() + ICON_TEXT_GAP + this.font.width(xpText);
+
+    // Fixed-size slots (sized for the widest icon) so icon changes never shift the layout; the text width is a minimum that grows for large values.
+    int lapisSlotWidth = Math.max(LAPIS_OK_ICON.width(), LAPIS_KO_ICON.width());
+    int xpSlotWidth = Math.max(XP_OK_ICON.width(), XP_KO_ICON.width());
+    int lapisWidth = lapisSlotWidth + ICON_TEXT_GAP + Math.max(this.font.width(lapisText), PRICE_MIN_TEXT_WIDTH);
+    int xpWidth = xpSlotWidth + ICON_TEXT_GAP + Math.max(this.font.width(xpText), PRICE_MIN_TEXT_WIDTH);
 
     // Lapis then XP, side by side, right-aligned on PRICE_RIGHT_X.
     int xpX = x + PRICE_RIGHT_X - xpWidth;
     int lapisX = xpX - PRICE_SPACING - lapisWidth;
     int rowY = y + PRICE_Y;
 
-    drawPrice(graphics, lapisIcon, lapisText, lapisX, rowY, lapisOk ? LAPIS_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
-    drawPrice(graphics, xpIcon, xpText, xpX, rowY, xpOk ? XP_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
+    drawPrice(graphics, lapisIcon, lapisSlotWidth, lapisText, lapisX, rowY, lapisOk ? GREY_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
+    drawPrice(graphics, xpIcon, xpSlotWidth, xpText, xpX, rowY, xpOk ? GREY_TEXT_COLOR : INSUFFICIENT_TEXT_COLOR);
   }
 
   /**
    * Draws an icon followed by its amount, both vertically centered on the price row.
    */
-  private void drawPrice(GuiGraphics graphics, Sprite icon, String text, int x, int rowY, int color) {
+  private void drawPrice(GuiGraphics graphics, Sprite icon, int iconSlotWidth, String text, int x, int rowY, int color) {
     int iconY = rowY + (PRICE_ROW_HEIGHT - icon.height()) / 2;
-    icon.blit(graphics, x, iconY);
-    int textY = rowY + (PRICE_ROW_HEIGHT - this.font.lineHeight) / 2;
-    graphics.drawString(this.font, text, x + icon.width() + ICON_TEXT_GAP, textY, color, false);
+    icon.blit(graphics, x + (iconSlotWidth - icon.width()) / 2, iconY);
+    int textY = rowY + (PRICE_ROW_HEIGHT - 8) / 2;
+    graphics.drawString(this.font, text, x + iconSlotWidth + ICON_TEXT_GAP, textY, color, false);
   }
 
   /**
