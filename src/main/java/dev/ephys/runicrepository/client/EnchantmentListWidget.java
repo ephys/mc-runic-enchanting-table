@@ -266,6 +266,7 @@ public class EnchantmentListWidget extends AbstractWidget {
 
     if (mouseOver((int) mouseX, (int) mouseY, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT)) {
       if (level > 0 && onLevelChanged != null) {
+        playClickSound();
         onLevelChanged.accept(applicable.id(), level - 1);
       }
       return true;
@@ -273,12 +274,17 @@ public class EnchantmentListWidget extends AbstractWidget {
 
     if (mouseOver((int) mouseX, (int) mouseY, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT)) {
       if (level < applicable.maxLevel() && onLevelChanged != null) {
+        playClickSound();
         onLevelChanged.accept(applicable.id(), level + 1);
       }
       return true;
     }
 
     return true;
+  }
+
+  private void playClickSound() {
+    playDownSound(Minecraft.getInstance().getSoundManager());
   }
 
   @Override

@@ -142,7 +142,7 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     list.updateEntries(applicable, selection, this::onLevelChanged, this::costDeltaForNextLevel);
 
     if (applyButton != null) {
-      applyButton.active = !selection.isEmpty();
+      applyButton.active = !selection.isEmpty() && canAfford(this.menu.computeCost(selection));
     }
   }
 
@@ -162,6 +162,18 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     return after - before;
   }
 
+  private boolean hasEnoughLapis(RunicEnchantingTableMenu.Cost cost) {
+    return this.minecraft.player.getAbilities().instabuild || this.menu.getLapisCount() >= cost.lapis();
+  }
+
+  private boolean hasEnoughXp(RunicEnchantingTableMenu.Cost cost) {
+    return this.minecraft.player.getAbilities().instabuild || this.minecraft.player.experienceLevel >= cost.xpLevels();
+  }
+
+  private boolean canAfford(RunicEnchantingTableMenu.Cost cost) {
+    return hasEnoughLapis(cost) && hasEnoughXp(cost);
+  }
+
   private void onEnchant() {
     if (selection.isEmpty()) {
       return;
@@ -179,9 +191,8 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     this.renderBook(graphics, x, y, partialTick);
 
     var cost = this.menu.computeCost(selection);
-    boolean creative = this.minecraft.player.getAbilities().instabuild;
-    boolean lapisOk = creative || this.menu.getLapisCount() >= cost.lapis();
-    boolean xpOk = creative || this.minecraft.player.experienceLevel >= cost.xpLevels();
+    boolean lapisOk = hasEnoughLapis(cost);
+    boolean xpOk = hasEnoughXp(cost);
 
     Sprite lapisIcon = lapisOk ? LAPIS_OK_ICON : LAPIS_KO_ICON;
     Sprite xpIcon = xpOk ? XP_OK_ICON : XP_KO_ICON;
