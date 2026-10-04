@@ -11,6 +11,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -25,8 +26,6 @@ import java.util.*;
  * combination rules of anvil combining (same level + same level = level + 1).
  */
 public final class EnchantmentLibrary {
-  private static final ResourceLocation ANCIENT_TOME = new ResourceLocation("quark", "ancient_tome");
-
   private EnchantmentLibrary() {
   }
 
@@ -54,24 +53,23 @@ public final class EnchantmentLibrary {
         continue;
       }
 
-      IItemHandler handler = be.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null);
-      if (handler == null) {
-        continue;
-      }
-
-      for (int slot = 0; slot < handler.getSlots(); slot++) {
-        ItemStack stack = handler.getStackInSlot(slot);
+      for (ItemStack stack : getStoredStacks(be)) {
         if (stack.isEmpty()) {
           continue;
         }
 
-        Enchantment tomeEnchantment = getAncientTomeEnchantment(stack);
-        if (tomeEnchantment != null) {
-          tomesPerEnchantment.merge(tomeEnchantment, 1, Integer::sum);
+        if (stack.is(ModTags.Items.ANCIENT_TOMES)) {
+          Enchantment tomeEnchantment = getAncientTomeEnchantment(stack);
+          if (tomeEnchantment != null) {
+            tomesPerEnchantment.merge(tomeEnchantment, 1, Integer::sum);
+          }
+
           continue;
         }
 
-        // TODO: allow-list enchanted books only, via an item tag
+        if (!stack.is(ModTags.Items.ENCHANTED_BOOKS)) {
+          continue;
+        }
 
         EnchantmentHelper.getEnchantments(stack).forEach((enchantment, lvl) ->
           levelsPerEnchantment.computeIfAbsent(enchantment, e -> new ArrayList<>()).add(lvl));
@@ -98,15 +96,28 @@ public final class EnchantmentLibrary {
     return Math.max(level, Math.min(level + tomes, maxLevel + 1));
   }
 
+  private static List<ItemStack> getStoredStacks(BlockEntity be) {
+    if (be instanceof LecternBlockEntity lectern) {
+      return List.of(lectern.getBook());
+    }
+
+    IItemHandler handler = be.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null);
+    if (handler == null) {
+      return List.of();
+    }
+
+    List<ItemStack> stacks = new ArrayList<>(handler.getSlots());
+    for (int slot = 0; slot < handler.getSlots(); slot++) {
+      stacks.add(handler.getStackInSlot(slot));
+    }
+    return stacks;
+  }
+
   /**
    * Returns the enchantment targeted by a Quark ancient tome, or null if the stack is not a configured tome.
    */
   @Nullable
   private static Enchantment getAncientTomeEnchantment(ItemStack stack) {
-    if (!ANCIENT_TOME.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()))) {
-      return null;
-    }
-
     for (net.minecraft.nbt.Tag tag : EnchantedBookItem.getEnchantments(stack)) {
       if (tag instanceof CompoundTag c) {
         ResourceLocation id = ResourceLocation.tryParse(c.getString("id"));
