@@ -1,0 +1,7 @@
+{
+  "block.runicrepository.runic_enchanting_table": "Runic Enchanting Table",
+  "gui.runicrepository.cost_delta": "+%s XP",
+  "gui.runicrepository.enchant": "Enchant",
+  "gui.runicrepository.incompatible_with": "Incompatible with %s",
+  "itemGroup.runicrepository": "Runic Repository"
+}
