@@ -3,6 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 version = mod_version
@@ -121,6 +122,13 @@ repositories {
             includeGroup 'net.mezzdev.config'
         }
     }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
@@ -140,6 +148,12 @@ dependencies {
 
     // JEI is only available at runtime, for dev/test environments
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+
+    // Quark is an optional dependency: only present at runtime in dev. The mod reads its items by registry name.
+    runtimeOnly fg.deobf("curse.maven:quark-243121:${quark_file_id}")
+    runtimeOnly fg.deobf("curse.maven:zeta-968868:${zeta_file_id}")
+    // Quark's mixins need MixinExtras, which Forge 1.20.1 does not ship.
+    runtimeOnly "io.github.llamalad7:mixinextras-forge:${mixinextras_version}"
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

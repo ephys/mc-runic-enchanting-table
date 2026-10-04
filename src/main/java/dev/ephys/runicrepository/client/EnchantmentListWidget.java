@@ -26,6 +26,8 @@ public class EnchantmentListWidget extends AbstractWidget {
   private static final Sprite ROW_DISABLED = new Sprite(0, 218, ROW_WIDTH, ROW_HEIGHT);
   private static final Sprite ROW_SELECTED = new Sprite(0, 237, ROW_WIDTH, ROW_HEIGHT);
 
+  private static final int ABOVE_MAX_COLOR = 0xAA00AA;
+
   private static final int VIEWPORT_WIDTH = 103;
   private static final int VIEWPORT_HEIGHT = 57;
 
@@ -115,13 +117,13 @@ public class EnchantmentListWidget extends AbstractWidget {
   }
 
   private MutableComponent getEnchantmentName(Enchantment enchantment, int level) {
-      MutableComponent mutablecomponent = Component.translatable(enchantment.getDescriptionId());
+    MutableComponent mutablecomponent = Component.translatable(enchantment.getDescriptionId());
 
-      if (level > 0 && (level != 1 || enchantment.getMaxLevel() != 1)) {
-        mutablecomponent.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level));
-      }
+    if (level > 0 && (level != 1 || enchantment.getMaxLevel() != 1)) {
+      mutablecomponent.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + level));
+    }
 
-      return mutablecomponent;
+    return mutablecomponent;
   }
 
   private void renderRow(GuiGraphics graphics, RunicEnchantingTableMenu.ApplicableEnchantment applicable, int rowTop, int left, int mouseX, int mouseY) {
@@ -132,7 +134,9 @@ public class EnchantmentListWidget extends AbstractWidget {
     Sprite row = !selectable ? ROW_DISABLED : selection.containsKey(applicable.id()) ? ROW_SELECTED : ROW_ENABLED;
     row.blit(graphics, left, rowTop);
 
-    int titleColor = !selectable ? 0x707070 : selection.containsKey(applicable.id()) ? 0xFFFFA0 : 0xFFFFFF;
+    int titleColor = !selectable ? 0x707070
+      : level > applicable.enchantment().getMaxLevel() ? ABOVE_MAX_COLOR
+      : selection.containsKey(applicable.id()) ? 0xFFFFA0 : 0xFFFFFF;
     Component name = getEnchantmentName(applicable.enchantment(), level);
     String fullName = name.getString();
     String trimmed = trimToWidth(font, fullName, NAME_MAX_WIDTH);

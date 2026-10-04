@@ -29,6 +29,10 @@ public class Config {
     .comment("How many lapis lazuli are consumed per enchantment level applied.")
     .defineInRange("lapisCostPerLevel", 1, 0, 64);
 
+  private static final ForgeConfigSpec.IntValue CEILING_BREAK_COST = BUILDER
+    .comment("Flat extra XP level cost added for each enchantment applied above its vanilla maximum level (only reachable with Quark ancient tomes).")
+    .defineInRange("ceilingBreakCost", 30, 0, 1000);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -36,6 +40,7 @@ public class Config {
   public static int bookshelfBelowRange;
   public static int rescanIntervalTicks;
   public static int lapisCostPerLevel;
+  public static int ceilingBreakCost = 30;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -44,5 +49,6 @@ public class Config {
     bookshelfBelowRange = BOOKSHELF_BELOW_RANGE.get();
     rescanIntervalTicks = RESCAN_INTERVAL_TICKS.get();
     lapisCostPerLevel = LAPIS_COST_PER_LEVEL.get();
+    ceilingBreakCost = CEILING_BREAK_COST.get();
   }
 }

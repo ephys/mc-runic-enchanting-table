@@ -160,7 +160,24 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
       int upgradedLevels = Math.max(0, entry.getValue() - existing.getOrDefault(entry.getKey(), 0));
       lapis += upgradedLevels * Config.lapisCostPerLevel;
     }
-    int xp = AnvilCost.getEnchantCost(existing, selected);
+    // With a flat ceiling-break cost, levels above the max are priced at the max level, then the flat cost is added.
+    Map<Enchantment, Integer> priced = selected;
+    int xp = 0;
+    if (Config.ceilingBreakCost > 0) {
+      priced = new LinkedHashMap<>();
+      for (Map.Entry<Enchantment, Integer> entry : selected.entrySet()) {
+        Enchantment enchantment = entry.getKey();
+        if (entry.getValue() > enchantment.getMaxLevel()) {
+          xp += Config.ceilingBreakCost;
+        }
+
+        int capped = Math.min(entry.getValue(), enchantment.getMaxLevel());
+        if (capped > existing.getOrDefault(enchantment, 0)) {
+          priced.put(enchantment, capped);
+        }
+      }
+    }
+    xp += priced.isEmpty() ? 0 : AnvilCost.getEnchantCost(existing, priced);
 
     return new Cost(lapis, xp);
   }
@@ -215,9 +232,10 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
       }
     }
 
-    for (Map.Entry<Enchantment, Integer> entry : toApply.entrySet()) {
-      stack.enchant(entry.getKey(), entry.getValue());
-    }
+    // ItemStack#enchant appends a new entry, which would duplicate an enchantment being upgraded.
+    Map<Enchantment, Integer> merged = new LinkedHashMap<>(EnchantmentHelper.getEnchantments(stack));
+    merged.putAll(toApply);
+    EnchantmentHelper.setEnchantments(merged, stack);
 
     if (!creative) {
       tableContainer.removeItem(RunicEnchantingTableBlockEntity.SLOT_LAPIS, cost.lapis());
