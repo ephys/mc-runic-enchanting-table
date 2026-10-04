@@ -147,12 +147,13 @@ public class EnchantmentListWidget extends AbstractWidget {
     boolean nameTrimmed = !trimmed.equals(fullName);
     graphics.drawString(font, trimmed, left + NAME_LOCAL_X, rowTop + (ROW_HEIGHT - 8) / 2, titleColor, false);
 
-    boolean rowHovered = mouseOver(mouseX, mouseY, left, rowTop, ROW_WIDTH, ROW_HEIGHT);
+    boolean inViewport = mouseOver(mouseX, mouseY, left, getY(), VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    boolean rowHovered = inViewport && mouseOver(mouseX, mouseY, left, rowTop, ROW_WIDTH, ROW_HEIGHT);
 
     if (!selectable) {
       if (rowHovered) {
         hoveredTooltip = Component.translatable("gui.runicrepository.incompatible_with",
-          applicable.incompatibleWith().getFullname(1)).withStyle(ChatFormatting.RED);
+          getEnchantmentName(applicable.incompatibleWith(), 0)).withStyle(ChatFormatting.RED);
       }
       return;
     }
@@ -164,8 +165,8 @@ public class EnchantmentListWidget extends AbstractWidget {
     int rightArrowX = left + RIGHT_ARROW_LOCAL_X;
     int arrowY = rowTop + ARROW_LOCAL_Y;
 
-    boolean hoveringLeft = mouseOver(mouseX, mouseY, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
-    boolean hoveringRight = mouseOver(mouseX, mouseY, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
+    boolean hoveringLeft = inViewport && mouseOver(mouseX, mouseY, leftArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
+    boolean hoveringRight = inViewport && mouseOver(mouseX, mouseY, rightArrowX, arrowY, ARROW_WIDTH, ARROW_HEIGHT);
 
     drawArrow(graphics, LEFT_ARROW_U, LEFT_ARROW_V, leftArrowX, arrowY, leftEnabled, hoveringLeft && leftEnabled);
     drawArrow(graphics, RIGHT_ARROW_U, RIGHT_ARROW_V, rightArrowX, arrowY, rightEnabled, hoveringRight && rightEnabled);
