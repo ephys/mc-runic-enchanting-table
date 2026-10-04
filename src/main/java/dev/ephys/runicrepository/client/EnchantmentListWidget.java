@@ -142,14 +142,17 @@ public class EnchantmentListWidget extends AbstractWidget {
 
     int titleColor = !selectable ? 0x707070 : level > 0 ? 0xFFFFA0 : 0xFFFFFF;
     Component name = getEnchantmentName(applicable.enchantment(), level);
-    String trimmed = trimToWidth(font, name.getString(), NAME_MAX_WIDTH);
+    String fullName = name.getString();
+    String trimmed = trimToWidth(font, fullName, NAME_MAX_WIDTH);
+    boolean nameTrimmed = !trimmed.equals(fullName);
     graphics.drawString(font, trimmed, left + NAME_LOCAL_X, rowTop + (ROW_HEIGHT - 8) / 2, titleColor, false);
 
+    boolean rowHovered = mouseOver(mouseX, mouseY, left, rowTop, ROW_WIDTH, ROW_HEIGHT);
+
     if (!selectable) {
-      Component conflict = Component.translatable("gui.runicrepository.incompatible_with",
-        applicable.incompatibleWith().getFullname(1)).withStyle(ChatFormatting.RED);
-      if (mouseOver(mouseX, mouseY, left + NAME_LOCAL_X, rowTop, NAME_MAX_WIDTH, ROW_HEIGHT)) {
-        hoveredTooltip = conflict;
+      if (rowHovered) {
+        hoveredTooltip = Component.translatable("gui.runicrepository.incompatible_with",
+          applicable.incompatibleWith().getFullname(1)).withStyle(ChatFormatting.RED);
       }
       return;
     }
@@ -169,7 +172,9 @@ public class EnchantmentListWidget extends AbstractWidget {
 
     if (rightEnabled && hoveringRight && costDeltaForNextLevel != null) {
       int delta = costDeltaForNextLevel.apply(applicable.id());
-      hoveredTooltip = Component.translatable("gui.runicrepository.cost_delta", delta);
+      hoveredTooltip = Component.translatable("gui.runicrepository.cost_delta", delta > 0 ? "+" + delta : delta).withStyle(delta > 0 ? ChatFormatting.WHITE : ChatFormatting.GREEN);
+    } else if (nameTrimmed && rowHovered) {
+      hoveredTooltip = name;
     }
   }
 
@@ -188,15 +193,33 @@ public class EnchantmentListWidget extends AbstractWidget {
     }
 
     String ellipsis = "...";
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < text.length(); i++) {
-      String candidate = sb + String.valueOf(text.charAt(i)) + ellipsis;
+    if (font.width(ellipsis) > maxWidth) {
+      return ellipsis;
+    }
+
+    // Grow the kept prefix/suffix one character at a time, alternating sides,
+    // so the omitted characters are removed from the middle of the string.
+    int prefixEnd = 0;
+    int suffixStart = text.length();
+    boolean growPrefix = true;
+    while (prefixEnd < suffixStart) {
+      int nextPrefixEnd = growPrefix ? prefixEnd + 1 : prefixEnd;
+      int nextSuffixStart = growPrefix ? suffixStart : suffixStart - 1;
+      if (nextPrefixEnd > nextSuffixStart) {
+        break;
+      }
+
+      String candidate = text.substring(0, nextPrefixEnd) + ellipsis + text.substring(nextSuffixStart);
       if (font.width(candidate) > maxWidth) {
         break;
       }
-      sb.append(text.charAt(i));
+
+      prefixEnd = nextPrefixEnd;
+      suffixStart = nextSuffixStart;
+      growPrefix = !growPrefix;
     }
-    return sb + ellipsis;
+
+    return text.substring(0, prefixEnd) + ellipsis + text.substring(suffixStart);
   }
 
   @Override
