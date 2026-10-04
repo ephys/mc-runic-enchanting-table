@@ -32,8 +32,7 @@ public class EnchantmentListWidget extends AbstractWidget {
   private static final int TRACK_LOCAL_X = 103;
   private static final int TRACK_WIDTH = 6;
   private static final int HANDLE_HEIGHT = 27;
-  private static final Sprite HANDLE_NORMAL = new Sprite(223, 1, TRACK_WIDTH, HANDLE_HEIGHT);
-  private static final Sprite HANDLE_HOVER = new Sprite(229, 1, TRACK_WIDTH, HANDLE_HEIGHT);
+  private static final Sprite HANDLE = new Sprite(223, 1, TRACK_WIDTH, HANDLE_HEIGHT);
 
   private static final int ARROW_WIDTH = 10;
   private static final int ARROW_HEIGHT = 15;
@@ -57,7 +56,6 @@ public class EnchantmentListWidget extends AbstractWidget {
   private Function<ResourceLocation, Integer> costDeltaForNextLevel;
 
   private double scrollAmount;
-  private boolean draggingScrollbar;
 
   @Nullable
   private Component hoveredTooltip;
@@ -112,9 +110,7 @@ public class EnchantmentListWidget extends AbstractWidget {
     if (maxScroll > 0) {
       int trackX = left + TRACK_LOCAL_X;
       int handleY = top + (int) Math.round((VIEWPORT_HEIGHT - HANDLE_HEIGHT) * (scrollAmount / maxScroll));
-      boolean hoveringHandle = mouseX >= trackX && mouseX < trackX + TRACK_WIDTH && mouseY >= handleY && mouseY < handleY + HANDLE_HEIGHT;
-      Sprite handle = (hoveringHandle || draggingScrollbar) ? HANDLE_HOVER : HANDLE_NORMAL;
-      handle.blit(graphics, trackX, handleY);
+      HANDLE.blit(graphics, trackX, handleY);
     }
   }
 
@@ -225,23 +221,6 @@ public class EnchantmentListWidget extends AbstractWidget {
     int left = this.getX();
     int top = this.getY();
 
-    double maxScroll = getMaxScroll();
-    if (maxScroll > 0) {
-      int trackX = left + TRACK_LOCAL_X;
-      int handleY = top + (int) Math.round((VIEWPORT_HEIGHT - HANDLE_HEIGHT) * (scrollAmount / maxScroll));
-      if (mouseX >= trackX && mouseX < trackX + TRACK_WIDTH) {
-        if (mouseY >= handleY && mouseY < handleY + HANDLE_HEIGHT) {
-          draggingScrollbar = true;
-        } else if (mouseY >= top && mouseY < top + VIEWPORT_HEIGHT) {
-          // Jump to the clicked position within the track.
-          double ratio = (mouseY - top - HANDLE_HEIGHT / 2.0) / (VIEWPORT_HEIGHT - HANDLE_HEIGHT);
-          scrollAmount = Math.max(0, Math.min(maxScroll, ratio * maxScroll));
-          draggingScrollbar = true;
-        }
-        return true;
-      }
-    }
-
     if (mouseX < left || mouseX >= left + VIEWPORT_WIDTH || mouseY < top || mouseY >= top + VIEWPORT_HEIGHT) {
       return false;
     }
@@ -285,25 +264,6 @@ public class EnchantmentListWidget extends AbstractWidget {
 
   private void playClickSound() {
     playDownSound(Minecraft.getInstance().getSoundManager());
-  }
-
-  @Override
-  public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-    if (draggingScrollbar) {
-      double maxScroll = getMaxScroll();
-      if (maxScroll > 0) {
-        double delta = dragY * (maxScroll / (VIEWPORT_HEIGHT - HANDLE_HEIGHT));
-        scrollAmount = Math.max(0, Math.min(maxScroll, scrollAmount + delta));
-      }
-      return true;
-    }
-    return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
-  }
-
-  @Override
-  public boolean mouseReleased(double mouseX, double mouseY, int button) {
-    draggingScrollbar = false;
-    return super.mouseReleased(mouseX, mouseY, button);
   }
 
   @Override
