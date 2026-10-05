@@ -69,6 +69,10 @@ public class Config {
     .comment("Multiplier applied to the XP cost of merging enchantments in an anvil (only when anvilMergeStableCost is enabled). 0 makes merging free.")
     .defineInRange("anvilMergeCostMultiplier", 0.0, 0.0, 1000.0);
 
+  private static final ForgeConfigSpec.IntValue FLAT_XP_LEVEL_COST = BUILDER
+    .comment("How many XP orbs in an XP level. This config makes each XP level worth a flat amount of XP orbs instead of the vanilla increasing amount. Set to -1 to use the vanilla XP level cost. Around 50 would make reaching level 30 take about the same amount of XP as in vanilla, but in a linear way.")
+    .defineInRange("flatXpLevelCost", -1, -1, Integer.MAX_VALUE);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -86,6 +90,7 @@ public class Config {
   public static volatile int anvilRenameXpCost = 0;
   public static volatile boolean anvilMergeStableCost = true;
   public static volatile double anvilMergeCostMultiplier = 0;
+  public static volatile int flatXpLevelCost = -1;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -104,5 +109,6 @@ public class Config {
     anvilRenameXpCost = ANVIL_RENAME_XP_COST.get();
     anvilMergeStableCost = ANVIL_MERGE_STABLE_COST.get();
     anvilMergeCostMultiplier = ANVIL_MERGE_COST_MULTIPLIER.get();
+    flatXpLevelCost = FLAT_XP_LEVEL_COST.get();
   }
 }
