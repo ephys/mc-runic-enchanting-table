@@ -7,6 +7,9 @@
   "mixins": [
     "AnvilMenuMixin"
   ],
+  "client": [
+    "AnvilScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

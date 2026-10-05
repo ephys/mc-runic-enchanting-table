@@ -52,4 +52,10 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu {
       ci.cancel();
     }
   }
+
+  // lift the "Too Expensive!" cap
+  @ModifyConstant(method = "createResult", constant = @Constant(intValue = 40))
+  private int runic$noCap(int value) {
+    return Config.anvilMaxCost;
+  }
 }
