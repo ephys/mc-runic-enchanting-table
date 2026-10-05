@@ -33,6 +33,14 @@ public class Config {
     .comment("Flat extra XP level cost added for each enchantment applied above its vanilla maximum level (only reachable with Quark ancient tomes).")
     .defineInRange("ceilingBreakCost", 30, 0, 1000);
 
+  private static final ForgeConfigSpec.BooleanValue ANVIL_REPAIR_NO_DAMAGE = BUILDER
+    .comment("Repairing does not damage the anvil.")
+    .define("anvilRepairNoDamage", true);
+
+  private static final ForgeConfigSpec.BooleanValue ANVIL_RENAME_NO_DAMAGE = BUILDER
+    .comment("Renaming does not damage the anvil.")
+    .define("anvilRenameNoDamage", true);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -41,6 +49,8 @@ public class Config {
   public static int rescanIntervalTicks;
   public static int lapisCostPerLevel;
   public static int ceilingBreakCost = 30;
+  public static volatile boolean anvilRepairNoDamage = true;
+  public static volatile boolean anvilRenameNoDamage = true;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -50,5 +60,7 @@ public class Config {
     rescanIntervalTicks = RESCAN_INTERVAL_TICKS.get();
     lapisCostPerLevel = LAPIS_COST_PER_LEVEL.get();
     ceilingBreakCost = CEILING_BREAK_COST.get();
+    anvilRepairNoDamage = ANVIL_REPAIR_NO_DAMAGE.get();
+    anvilRenameNoDamage = ANVIL_RENAME_NO_DAMAGE.get();
   }
 }

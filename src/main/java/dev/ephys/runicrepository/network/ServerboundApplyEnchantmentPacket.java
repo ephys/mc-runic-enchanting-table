@@ -1,5 +1,6 @@
 package dev.ephys.runicrepository.network;
 
+import dev.ephys.runicrepository.RunicRepository;
 import dev.ephys.runicrepository.menu.RunicEnchantingTableMenu;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +49,15 @@ public class ServerboundApplyEnchantmentPacket {
       }
 
       if (player.containerMenu instanceof RunicEnchantingTableMenu menu) {
-        menu.enchant(player, packet.selection);
+        try {
+          boolean result = menu.enchant(player, packet.selection);
+          if (!result) {
+            RunicRepository.LOGGER.error("Failed to apply enchantments for player {}", player.getName().getString());
+          }
+        } catch (Throwable e) {
+          RunicRepository.LOGGER.error("Error when applying enchantments", e);
+          throw e;
+        }
       }
     });
     context.setPacketHandled(true);
