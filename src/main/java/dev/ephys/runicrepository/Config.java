@@ -42,12 +42,16 @@ public class Config {
     .define("anvilRenameNoDamage", true);
 
   private static final ForgeConfigSpec.BooleanValue ANVIL_BLOCK_BOOK_ENCHANTING = BUILDER
-    .comment("Prevent applying enchanted books to items in the anvil (books can still be combined with each other, and items with each other).")
+    .comment("Prevent applying enchanted books to items in the anvil in favor of using the enchanting table (books can still be combined with each other, and items with each other).")
     .define("anvilBlockBookEnchanting", true);
 
   private static final ForgeConfigSpec.IntValue ANVIL_MAX_COST = BUILDER
     .comment("Maximum XP cost for an anvil operation (Vanilla default is 40).")
     .defineInRange("anvilMaxCost", Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
+
+  private static final ForgeConfigSpec.BooleanValue ANVIL_NO_PRIOR_WORK_PENALTY = BUILDER
+    .comment("Disable the anvil's cumulative \"prior work\" repair penalty.")
+    .define("anvilNoPriorWorkPenalty", true);
 
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -61,6 +65,7 @@ public class Config {
   public static volatile boolean anvilRenameNoDamage = true;
   public static volatile boolean anvilBlockBookEnchanting = true;
   public static volatile int anvilMaxCost = Integer.MAX_VALUE;
+  public static volatile boolean anvilNoPriorWorkPenalty = true;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -74,5 +79,6 @@ public class Config {
     anvilRenameNoDamage = ANVIL_RENAME_NO_DAMAGE.get();
     anvilBlockBookEnchanting = ANVIL_BLOCK_BOOK_ENCHANTING.get();
     anvilMaxCost = ANVIL_MAX_COST.get();
+    anvilNoPriorWorkPenalty = ANVIL_NO_PRIOR_WORK_PENALTY.get();
   }
 }

@@ -58,4 +58,16 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenu {
   private int runic$noCap(int value) {
     return Config.anvilMaxCost;
   }
+
+  @Redirect(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getBaseRepairCost()I"))
+  private int runic$noBaseRepairCost(ItemStack stack) {
+    return Config.anvilNoPriorWorkPenalty ? 0 : stack.getBaseRepairCost();
+  }
+
+  @Inject(method = "calculateIncreasedRepairCost", at = @At("HEAD"), cancellable = true)
+  private static void runic$noRepairCostIncrease(int cost, CallbackInfoReturnable<Integer> cir) {
+    if (Config.anvilNoPriorWorkPenalty) {
+      cir.setReturnValue(0);
+    }
+  }
 }
