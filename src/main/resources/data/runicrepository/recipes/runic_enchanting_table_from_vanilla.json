@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:enchanting_table"
+    }
+  ],
+  "result": {
+    "item": "runicrepository:runic_enchanting_table"
+  }
+}
