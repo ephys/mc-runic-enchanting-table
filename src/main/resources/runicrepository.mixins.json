@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.ephys.runicrepository.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "runicrepository.refmap.json",
+  "mixins": [
+    "AnvilMenuMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

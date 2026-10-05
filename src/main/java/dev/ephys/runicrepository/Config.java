@@ -41,6 +41,10 @@ public class Config {
     .comment("Renaming does not damage the anvil.")
     .define("anvilRenameNoDamage", true);
 
+  private static final ForgeConfigSpec.BooleanValue ANVIL_BLOCK_BOOK_ENCHANTING = BUILDER
+    .comment("Prevent applying enchanted books to items in the anvil (books can still be combined with each other, and items with each other).")
+    .define("anvilBlockBookEnchanting", true);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -51,6 +55,7 @@ public class Config {
   public static int ceilingBreakCost = 30;
   public static volatile boolean anvilRepairNoDamage = true;
   public static volatile boolean anvilRenameNoDamage = true;
+  public static volatile boolean anvilBlockBookEnchanting = true;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -62,5 +67,6 @@ public class Config {
     ceilingBreakCost = CEILING_BREAK_COST.get();
     anvilRepairNoDamage = ANVIL_REPAIR_NO_DAMAGE.get();
     anvilRenameNoDamage = ANVIL_RENAME_NO_DAMAGE.get();
+    anvilBlockBookEnchanting = ANVIL_BLOCK_BOOK_ENCHANTING.get();
   }
 }
