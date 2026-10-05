@@ -73,6 +73,10 @@ public class Config {
     .comment("How many XP orbs in an XP level. This config makes each XP level worth a flat amount of XP orbs instead of the vanilla increasing amount. Set to -1 to use the vanilla XP level cost. Around 50 would make reaching level 30 take about the same amount of XP as in vanilla, but in a linear way.")
     .defineInRange("flatXpLevelCost", -1, -1, Integer.MAX_VALUE);
 
+  private static final ForgeConfigSpec.BooleanValue KEEP_XP_AFTER_DEATH = BUILDER
+    .comment("Keep your XP after death.")
+    .define("keepXpAfterDeath", false);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -91,6 +95,7 @@ public class Config {
   public static volatile boolean anvilMergeStableCost = true;
   public static volatile double anvilMergeCostMultiplier = 0;
   public static volatile int flatXpLevelCost = -1;
+  public static volatile boolean keepXpAfterDeath = false;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -110,5 +115,6 @@ public class Config {
     anvilMergeStableCost = ANVIL_MERGE_STABLE_COST.get();
     anvilMergeCostMultiplier = ANVIL_MERGE_COST_MULTIPLIER.get();
     flatXpLevelCost = FLAT_XP_LEVEL_COST.get();
+    keepXpAfterDeath = KEEP_XP_AFTER_DEATH.get();
   }
 }
