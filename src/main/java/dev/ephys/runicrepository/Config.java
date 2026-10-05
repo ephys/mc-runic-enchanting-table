@@ -53,6 +53,22 @@ public class Config {
     .comment("Disable the anvil's cumulative \"prior work\" repair penalty.")
     .define("anvilNoPriorWorkPenalty", true);
 
+  private static final ForgeConfigSpec.IntValue ANVIL_REPAIR_XP_COST = BUILDER
+    .comment("Flat XP cost for repairing an item in the anvil. Set to -1 to use the vanilla cost.")
+    .defineInRange("anvilRepairXpCost", 0, -1, Integer.MAX_VALUE);
+
+  private static final ForgeConfigSpec.IntValue ANVIL_RENAME_XP_COST = BUILDER
+    .comment("Flat XP cost for renaming an item in the anvil. Set to -1 to use the vanilla cost.")
+    .defineInRange("anvilRenameXpCost", 0, -1, Integer.MAX_VALUE);
+
+  private static final ForgeConfigSpec.BooleanValue ANVIL_MERGE_STABLE_COST = BUILDER
+    .comment("Use the enchanting algorithm of the enchanting library for merging enchantments on items in the anvil (from https://github.com/PCamille/mc-stable_anvil_cost).")
+    .define("anvilMergeStableCost", true);
+
+  private static final ForgeConfigSpec.DoubleValue ANVIL_MERGE_COST_MULTIPLIER = BUILDER
+    .comment("Multiplier applied to the XP cost of merging enchantments in an anvil (only when anvilMergeStableCost is enabled). 0 makes merging free.")
+    .defineInRange("anvilMergeCostMultiplier", 0.0, 0.0, 1000.0);
+
   static final ForgeConfigSpec SPEC = BUILDER.build();
 
   public static int bookshelfHorizontalRange;
@@ -66,6 +82,10 @@ public class Config {
   public static volatile boolean anvilBlockBookEnchanting = true;
   public static volatile int anvilMaxCost = Integer.MAX_VALUE;
   public static volatile boolean anvilNoPriorWorkPenalty = true;
+  public static volatile int anvilRepairXpCost = 0;
+  public static volatile int anvilRenameXpCost = 0;
+  public static volatile boolean anvilMergeStableCost = true;
+  public static volatile double anvilMergeCostMultiplier = 0;
 
   @net.minecraftforge.eventbus.api.SubscribeEvent
   static void onLoad(final ModConfigEvent event) {
@@ -80,5 +100,9 @@ public class Config {
     anvilBlockBookEnchanting = ANVIL_BLOCK_BOOK_ENCHANTING.get();
     anvilMaxCost = ANVIL_MAX_COST.get();
     anvilNoPriorWorkPenalty = ANVIL_NO_PRIOR_WORK_PENALTY.get();
+    anvilRepairXpCost = ANVIL_REPAIR_XP_COST.get();
+    anvilRenameXpCost = ANVIL_RENAME_XP_COST.get();
+    anvilMergeStableCost = ANVIL_MERGE_STABLE_COST.get();
+    anvilMergeCostMultiplier = ANVIL_MERGE_COST_MULTIPLIER.get();
   }
 }
