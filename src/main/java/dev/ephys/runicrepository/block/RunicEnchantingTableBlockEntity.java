@@ -155,7 +155,6 @@ public class RunicEnchantingTableBlockEntity extends BaseContainerBlockEntity {
     }
   }
 
-  @OnlyIn(Dist.CLIENT)
   public Map<ResourceLocation, Integer> getLibrary() {
     return library;
   }

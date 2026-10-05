@@ -179,6 +179,7 @@ public class RunicEnchantingTableScreen extends AbstractContainerScreen<RunicEnc
     if (selection.isEmpty()) {
       return;
     }
+
     NetworkHandler.CHANNEL.sendToServer(new ServerboundApplyEnchantmentPacket(new HashMap<>(selection)));
     selection.clear();
   }

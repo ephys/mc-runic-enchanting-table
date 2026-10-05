@@ -243,7 +243,6 @@ public class RunicEnchantingTableMenu extends AbstractContainerMenu {
     }
 
     int maxLevelApplied = toApply.values().stream().mapToInt(Integer::intValue).max().orElse(1);
-    player.onEnchantmentPerformed(stack, maxLevelApplied);
     player.awardStat(Stats.ENCHANT_ITEM);
     CriteriaTriggers.ENCHANTED_ITEM.trigger(player, stack, maxLevelApplied);
 
